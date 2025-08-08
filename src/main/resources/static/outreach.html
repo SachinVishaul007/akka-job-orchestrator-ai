@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Outreach Finder</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 2rem 0;
+        }
+        .search-container {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .result-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 2rem 0;
+        }
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 class="text-center mb-4">Employee Outreach Finder</h1>
+
+            <div class="search-container">
+                <form id="searchForm">
+                    <div class="mb-3">
+                        <label for="companyName" class="form-label">Company Name</label>
+                        <input type="text" class="form-control" id="companyName" required
+                               placeholder="e.g., Google, Microsoft, Mondee">
+                    </div>
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Role/Designation (Optional)</label>
+                        <input type="text" class="form-control" id="role"
+                               placeholder="e.g., Software Engineer, Product Manager">
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <span id="searchText">Search Employees</span>
+                            <span id="searchSpinner" class="spinner-border spinner-border-sm d-none" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Searching for employees...</p>
+            </div>
+
+            <div id="results"></div>
+
+            <div class="alert alert-info" id="noResults" style="display: none;">
+                No employees found. Try a different search term.
+            </div>
+
+            <div class="alert alert-danger" id="errorAlert" style="display: none;">
+                An error occurred while searching. Please try again.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('searchForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const companyName = document.getElementById('companyName').value.trim();
+        const role = document.getElementById('role').value.trim();
+        const resultsDiv = document.getElementById('results');
+        const loadingDiv = document.getElementById('loading');
+        const noResultsDiv = document.getElementById('noResults');
+        const errorAlert = document.getElementById('errorAlert');
+        const searchText = document.getElementById('searchText');
+        const searchSpinner = document.getElementById('searchSpinner');
+
+        // Reset UI
+        resultsDiv.innerHTML = '';
+        noResultsDiv.style.display = 'none';
+        errorAlert.style.display = 'none';
+        loadingDiv.style.display = 'block';
+        searchText.textContent = 'Searching...';
+        searchSpinner.classList.remove('d-none');
+
+        try {
+            // Build search query
+            let query = `site:linkedin.com/in "${companyName}"`;
+            if (role) {
+                query += ` "${role}"`;
+            }
+
+            console.log('Formatted search query:', query);
+
+            // Construct the full request URL
+            const apiUrl = `/api/search-employees?q=${encodeURIComponent(query)}`;
+            console.log('Full request URL:', apiUrl);
+
+            // Log the request details
+            console.log('Sending request:', {
+                method: 'GET',
+                url: apiUrl,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            // Call the Google Custom Search API
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+
+            console.log('API Response:', data);
+
+            // Hide loading
+            loadingDiv.style.display = 'none';
+            searchText.textContent = 'Search Employees';
+            searchSpinner.classList.add('d-none');
+
+            console.log('Search results count:', data.searchInformation?.formattedTotalResults || 0);
+
+            if (!data.items || data.items.length === 0) {
+                noResultsDiv.innerHTML = `
+                        <h5>No results found for "${companyName}"${role ? ` with role "${role}"` : ''}</h5>
+                        <p class="mb-0">Try a different company name or role.</p>
+                    `;
+                noResultsDiv.style.display = 'block';
+                return;
+            }
+
+            // Process and display results
+            data.items.forEach(item => {
+                console.log('Processing item:', item);
+
+                const title = item.title || 'No title';
+                const link = item.link || '#';
+                const snippet = item.snippet || 'No description available';
+
+                // Extract name and role from the title
+                const titleParts = title.split(' - ');
+                const name = titleParts[0] || 'Unknown';
+                const role = titleParts.length > 1 ? titleParts[1].replace('| LinkedIn', '').trim() : 'Role not specified';
+
+                // Extract or generate email
+                const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi;
+                let email = '';
+                const emailMatch = snippet.match(emailRegex);
+
+                if (emailMatch) {
+                    email = emailMatch[0];
+                } else {
+                    // Generate potential email pattern
+                    const nameParts = name.toLowerCase().split(' ').filter(Boolean);
+                    if (nameParts.length >= 2) {
+                        const domain = companyName.toLowerCase().replace(/\s+/g, '') + '.com';
+                        email = `${nameParts[0]}.${nameParts[nameParts.length - 1]}@${domain}`;
+                    }
+                }
+
+                // Create result card with email
+                const card = document.createElement('div');
+                card.className = 'card mb-3';
+                card.innerHTML = `
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="card-title mb-1">${name}</h5>
+                                    <h6 class="card-subtitle mb-2 text-muted">${role}</h6>
+                                </div>
+                                <a href="${link}" class="btn btn-outline-primary btn-sm" target="_blank" rel="noopener">
+                                    <i class="bi bi-linkedin"></i> Profile
+                                </a>
+                            </div>
+                            <p class="card-text mt-2">${snippet}</p>
+                            ${email ? `
+                            <div class="d-flex align-items-center mt-2">
+                                <span class="me-2 text-muted">Email:</span>
+                                <div class="input-group input-group-sm" style="max-width: 300px;">
+                                    <input type="text" class="form-control form-control-sm" value="${email}" readonly>
+                                    <button class="btn btn-outline-secondary copy-btn" type="button" data-email="${email}">
+                                        <i class="bi bi-clipboard"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                    `;
+                resultsDiv.appendChild(card);
+            });
+
+            // Show results
+            resultsDiv.style.display = 'block';
+
+        } catch (error) {
+            console.error('Error details:', {
+                message: error.message,
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                data: error.data,
+                stack: error.stack
+            });
+
+            loadingDiv.style.display = 'none';
+            errorAlert.style.display = 'block';
+
+            // Build a detailed error message
+            let errorMessage = 'An error occurred while searching for employees.';
+
+            if (error.response) {
+                // Server responded with an error status
+                const status = error.response.status;
+                const statusText = error.response.statusText;
+                const serverError = error.data?.error || '';
+
+                if (status === 401) {
+                    errorMessage = 'Authentication failed. Please check your API key.';
+                } else if (status === 403) {
+                    errorMessage = 'Access denied. You may not have permission to access this resource.';
+                } else if (status === 404) {
+                    errorMessage = 'The requested resource was not found.';
+                } else if (status >= 500) {
+                    errorMessage = 'A server error occurred. Please try again later.';
+                } else {
+                    errorMessage = `Error ${status}: ${statusText}`;
+                }
+
+                if (serverError) {
+                    errorMessage += ` (${serverError})`;
+                }
+            } else if (error.message) {
+                // Other error with a message
+                errorMessage = error.message;
+            }
+
+            errorAlert.textContent = errorMessage;
+            searchText.textContent = 'Search Employees';
+            searchSpinner.classList.add('d-none');
+        }
+    });
+</script>
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Add copy email functionality
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.copy-btn')) {
+            const button = e.target.closest('.copy-btn');
+            const email = button.getAttribute('data-email');
+            navigator.clipboard.writeText(email).then(() => {
+                // Change icon to checkmark
+                const icon = button.querySelector('i');
+                const originalClass = icon.className;
+                icon.className = 'bi bi-check2';
+
+                // Revert back after 2 seconds
+                setTimeout(() => {
+                    icon.className = originalClass;
+                }, 2000);
+            });
+        }
+    });
+</script>
+</body>
+</html>
