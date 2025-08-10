@@ -14,6 +14,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -127,5 +130,55 @@ public class LocalStorageService {
 
         File[] files = dir.listFiles((d, name) -> name.endsWith(".json"));
         return files != null ? files.length : 0;
+    }
+
+    public Set<String> getAllDatasetIds() {
+        File datasetsDir = new File(getStoragePath(), "datasets");
+        if (!datasetsDir.exists()) {
+            return Collections.emptySet();
+        }
+
+        File[] files = datasetsDir.listFiles((dir, name) -> name.endsWith(".json"));
+        if (files == null) {
+            return Collections.emptySet();
+        }
+
+        Set<String> datasetIds = new HashSet<>();
+        for (File file : files) {
+            String fileName = file.getName().replace(".json", "");
+            datasetIds.add(fileName);
+        }
+        return datasetIds;
+    }
+
+    // Add this method for dataset-specific storage
+    public void storeDatasetResumeData(String datasetId, ResumeData resumeData) throws IOException {
+        if (resumeData == null) {
+            throw new IllegalArgumentException("Resume data cannot be null");
+        }
+
+        Path storageDir = Paths.get(getStoragePath(), "datasets");
+        if (!Files.exists(storageDir)) {
+            Files.createDirectories(storageDir);
+        }
+
+        resumeData.setId(datasetId);
+        Path dataPath = storageDir.resolve(datasetId + ".json");
+        objectMapper.writeValue(dataPath.toFile(), resumeData);
+
+        System.out.println("Dataset " + datasetId + " stored at: " + dataPath.toString());
+    }
+
+    // Add this method for dataset-specific retrieval
+    public ResumeData getDatasetResumeData(String datasetId) throws IOException {
+        Path dataPath = Paths.get(getStoragePath(), "datasets", datasetId + ".json");
+        File file = dataPath.toFile();
+
+        if (!file.exists()) {
+            System.out.println("No data found for dataset: " + datasetId);
+            return null;
+        }
+
+        return objectMapper.readValue(file, ResumeData.class);
     }
 }

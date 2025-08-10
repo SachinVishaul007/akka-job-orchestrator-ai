@@ -5,6 +5,7 @@ import com.joborchestratorai.akkajoborchestratorai.models.SearchRequest;
 import com.joborchestratorai.akkajoborchestratorai.models.SearchResult;
 import com.joborchestratorai.akkajoborchestratorai.services.ResumeSearchService;
 import com.joborchestratorai.akkajoborchestratorai.services.OpenAIService;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +21,7 @@ import java.util.concurrent.CompletableFuture;
 @RestController
 @RequestMapping("/api")
 @CrossOrigin
+@Profile("single-node")
 public class ResumeController {
 
     private final ResumeSearchService resumeSearchService;

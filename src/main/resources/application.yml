@@ -1,0 +1,55 @@
+spring:
+  application:
+    name: akka-job-orchestrator-ai
+
+server:
+  port: 8080
+
+---
+spring:
+  config:
+    activate:
+      on-profile: single-node
+
+akka:
+  actor:
+    provider: local
+
+server:
+  port: 8080
+
+---
+spring:
+  config:
+    activate:
+      on-profile: node1
+
+akka:
+  remote:
+    artery:
+      canonical:
+        port: 2551
+  management:
+    http:
+      port: 8558
+
+server:
+  port: 8080
+
+---
+spring:
+  config:
+    activate:
+      on-profile: node2
+
+akka:
+  remote:
+    artery:
+      canonical:
+        port: 2552
+  management:
+    http:
+      port: 8559
+
+server:
+  port: 8081

@@ -3,6 +3,7 @@ package com.joborchestratorai.akkajoborchestratorai.services;
 import akka.actor.typed.ActorSystem;
 import com.joborchestratorai.akkajoborchestratorai.actors.MasterActor;
 import com.joborchestratorai.akkajoborchestratorai.models.SearchResult;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Profile("single-node")
 public class ResumeSearchService {
 
     private final ActorSystem<MasterActor.Command> actorSystem;

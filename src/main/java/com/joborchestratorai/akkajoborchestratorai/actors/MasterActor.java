@@ -32,7 +32,8 @@ public class MasterActor extends AbstractBehavior<MasterActor.Command> {
         }
     }
 
-    public static class StoreResumeData {
+    // FIXED: Added "implements Command"
+    public static class StoreResumeData implements Command {
         public final ResumeData resumeData;
         public StoreResumeData(ResumeData resumeData) { this.resumeData = resumeData; }
     }

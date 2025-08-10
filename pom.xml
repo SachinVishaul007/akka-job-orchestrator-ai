@@ -56,6 +56,38 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-cluster-typed_2.13</artifactId>
+            <version>2.8.5</version>
+        </dependency>
+
+        <!-- Akka Cluster Sharding -->
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-cluster-sharding-typed_2.13</artifactId>
+            <version>2.8.5</version>
+        </dependency>
+
+        <!-- Akka Management (for cluster bootstrap) -->
+        <dependency>
+            <groupId>com.lightbend.akka.management</groupId>
+            <artifactId>akka-management-cluster-bootstrap_2.13</artifactId>
+            <version>1.4.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-serialization-jackson_2.13</artifactId>
+            <version>2.8.5</version>
+        </dependency>
+
+        <!-- Akka Discovery for local testing -->
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-discovery_2.13</artifactId>
+            <version>2.8.5</version>
+        </dependency>
         <!-- Akka Dependencies -->
         <dependency>
             <groupId>com.typesafe.akka</groupId>
