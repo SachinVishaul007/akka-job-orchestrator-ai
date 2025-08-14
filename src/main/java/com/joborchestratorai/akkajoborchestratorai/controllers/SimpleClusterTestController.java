@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@Profile({"node1", "node2", "clustered"})
+@Profile({"node1", "node2", "node3", "node4", "clustered"}) // Add node3 and node4
 public class SimpleClusterTestController {
 
     @Autowired

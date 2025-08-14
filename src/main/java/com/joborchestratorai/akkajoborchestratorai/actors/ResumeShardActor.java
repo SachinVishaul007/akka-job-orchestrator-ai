@@ -6,7 +6,7 @@ import akka.actor.typed.javadsl.*;
 import akka.cluster.sharding.typed.javadsl.EntityTypeKey;
 import com.joborchestratorai.akkajoborchestratorai.models.ResumeData;
 import com.joborchestratorai.akkajoborchestratorai.models.SearchResult;
-import com.joborchestratorai.akkajoborchestratorai.services.ClusteredStorageService;
+import com.joborchestratorai.akkajoborchestratorai.services.LocalStorageService;
 import com.joborchestratorai.akkajoborchestratorai.services.OpenAIService;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -55,6 +55,7 @@ public class ResumeShardActor extends AbstractBehavior<ResumeShardActor.Command>
         public final int topK;
         public final ActorRef<SearchResponse> replyTo;
 
+        // Note: ActorRef serialization is handled automatically by Akka
         @JsonCreator
         public SearchInDataset(@JsonProperty("datasetId") String datasetId,
                                @JsonProperty("jobDescription") String jobDescription,
@@ -82,10 +83,14 @@ public class ResumeShardActor extends AbstractBehavior<ResumeShardActor.Command>
             this.datasetId = datasetId;
             this.results = results;
         }
+
+        // Add getter methods for better access
+        public String getDatasetId() { return datasetId; }
+        public List<SearchResult> getResults() { return results; }
     }
 
     private final String datasetId;
-    private final ClusteredStorageService storageService;
+    private final LocalStorageService storageService;
     private final OpenAIService openAIService;
     private ResumeData cachedResumeData;
 
@@ -96,8 +101,8 @@ public class ResumeShardActor extends AbstractBehavior<ResumeShardActor.Command>
     private ResumeShardActor(ActorContext<Command> context, String datasetId) {
         super(context);
         this.datasetId = datasetId;
-        this.storageService = new ClusteredStorageService();
-        this.openAIService = new OpenAIService(new com.joborchestratorai.akkajoborchestratorai.services.LocalStorageService());
+        this.storageService = new LocalStorageService();
+        this.openAIService = new OpenAIService(storageService);
 
         getContext().getLog().info("ResumeShardActor started for dataset: {}", datasetId);
     }
@@ -114,10 +119,10 @@ public class ResumeShardActor extends AbstractBehavior<ResumeShardActor.Command>
         try {
             getContext().getLog().info("Processing dataset {} from file: {}", datasetId, msg.filePath);
 
-            // Here you would integrate with your FileReaderActor logic
-            // to process the Excel file and store it with the dataset ID
+            // TODO: Integrate with your FileReaderActor logic here
+            // You'll need to modify FileReaderActor to work with dataset IDs
+            // or process the Excel file directly here
 
-            // For now, simulate successful processing
             getContext().getLog().info("Dataset {} processed successfully", datasetId);
         } catch (Exception e) {
             getContext().getLog().error("Error processing dataset {}: {}", datasetId, e.getMessage());
@@ -129,6 +134,7 @@ public class ResumeShardActor extends AbstractBehavior<ResumeShardActor.Command>
         try {
             // Load cached data or fetch from storage
             if (cachedResumeData == null) {
+                // Use the enhanced LocalStorageService methods you'll add
                 cachedResumeData = storageService.getDatasetResumeData(datasetId);
             }
 

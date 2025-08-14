@@ -12,7 +12,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 @Configuration
-@Profile({"node1", "node2", "clustered"})  // Activate for node1, node2, or clustered profiles
+@Profile({"node1", "node2", "node3", "node4", "clustered"})  // Added node3 and node4
 public class ClusteredAkkaConfig {
 
     @Value("${akka.remote.artery.canonical.port:2551}")
@@ -22,7 +22,7 @@ public class ClusteredAkkaConfig {
     private int managementPort;
 
     @Bean
-    public Config clusteredAkkaConfiguration() {  // Changed name to avoid conflicts
+    public Config clusteredAkkaConfiguration() {
         return ConfigFactory.parseString(String.format("""
             akka {
               actor {
@@ -47,14 +47,19 @@ public class ClusteredAkkaConfig {
               cluster {
                 seed-nodes = [
                   "akka://resume-search-system@127.0.0.1:2551",
-                  "akka://resume-search-system@127.0.0.1:2552"
+                  "akka://resume-search-system@127.0.0.1:2552",
+                  "akka://resume-search-system@127.0.0.1:2553",
+                  "akka://resume-search-system@127.0.0.1:2554"
                 ]
                 downing-provider-class = "akka.cluster.sbr.SplitBrainResolverProvider"
                 split-brain-resolver {
-                  active-strategy = "keep-oldest"
-                  stable-after = 10s
+                  active-strategy = "keep-majority"
+                  stable-after = 20s
+                  keep-majority {
+                    role = ""
+                  }
                 }
-                min-nr-of-members = 1
+                min-nr-of-members = 2  // Require at least 2 nodes for better fault tolerance
               }
               
               management {
@@ -72,7 +77,7 @@ public class ClusteredAkkaConfig {
         ActorSystem<ClusteredMasterActor.Command> system = ActorSystem.create(
                 ClusteredMasterActor.create(),
                 "resume-search-system",
-                clusteredAkkaConfiguration()  // Use the renamed method
+                clusteredAkkaConfiguration()
         );
 
         // Start Akka Management

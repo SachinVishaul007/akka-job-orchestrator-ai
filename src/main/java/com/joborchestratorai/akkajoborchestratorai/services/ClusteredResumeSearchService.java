@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@Profile({"node1", "node2", "clustered"}) // Only active in clustered profiles
+@Profile({"node1", "node2", "node3", "node4", "clustered"})
 public class ClusteredResumeSearchService {
 
     private final ActorSystem<ClusteredMasterActor.Command> actorSystem;

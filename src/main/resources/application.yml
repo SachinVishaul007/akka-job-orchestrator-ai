@@ -53,3 +53,39 @@ akka:
 
 server:
   port: 8081
+
+---
+spring:
+  config:
+    activate:
+      on-profile: node3
+
+akka:
+  remote:
+    artery:
+      canonical:
+        port: 2553
+  management:
+    http:
+      port: 8560
+
+server:
+  port: 8082
+
+---
+spring:
+  config:
+    activate:
+      on-profile: node4
+
+akka:
+  remote:
+    artery:
+      canonical:
+        port: 2554
+  management:
+    http:
+      port: 8561
+
+server:
+  port: 8083
