@@ -15,5 +15,9 @@ public class HomeController {
     public String indexHtml() {
         return "indextest";
     }
-
+    
+    @GetMapping("/bulk-email")
+    public String bulkEmail() {
+        return "bulk-email";
+    }
 }
