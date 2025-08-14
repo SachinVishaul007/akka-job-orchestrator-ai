@@ -16,7 +16,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 @RestController
 @RequestMapping("/api")
@@ -98,7 +98,7 @@ public class ResumeController {
 
     // Legacy search for resume points (keeping for compatibility)
     @PostMapping("/search")
-    public CompletableFuture<ResponseEntity<List<SearchResult>>> search(@RequestBody SearchRequest request) {
+    public CompletionStage<ResponseEntity<List<SearchResult>>> search(@RequestBody SearchRequest request) {
         return resumeSearchService.searchResumes(request.getJobDescription(), request.getTopK())
                 .thenApply(ResponseEntity::ok)
                 .exceptionally(ex -> ResponseEntity.internalServerError().build());
