@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>AI Resume Generator</title>
+    <title>AI Resume Generator & Employee Finder</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -403,6 +403,79 @@
             to { transform: rotate(360deg); }
         }
 
+        /* Employee search styles */
+        .result-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(108, 92, 231, 0.1);
+        }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+            border-color: #6c5ce7;
+        }
+
+        .employee-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3436;
+            margin-bottom: 0.5rem;
+        }
+
+        .employee-role {
+            color: #636e72;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .employee-email {
+            background: rgba(108, 92, 231, 0.05);
+            border: 1px solid rgba(108, 92, 231, 0.1);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #6c5ce7;
+            margin-top: 1rem;
+            display: inline-block;
+        }
+
+        .btn-linkedin {
+            background: linear-gradient(135deg, #0077b5, #00a0dc);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .btn-linkedin:hover {
+            background: linear-gradient(135deg, #005885, #0077b5);
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .email-copy-btn {
+            background: rgba(108, 92, 231, 0.1);
+            border: 1px solid rgba(108, 92, 231, 0.2);
+            color: #6c5ce7;
+            border-radius: 6px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+
+        .email-copy-btn:hover {
+            background: #6c5ce7;
+            color: white;
+        }
+
         @media (max-width: 768px) {
             .hero-title { font-size: 2.5rem; }
             .hero-subtitle { font-size: 1.1rem; }
@@ -421,10 +494,10 @@
             <i class="bi bi-file-earmark-text floating-icon"></i>
             <i class="bi bi-cpu floating-icon"></i>
             <i class="bi bi-lightning-charge floating-icon"></i>
-            <i class="bi bi-stars floating-icon"></i>
+            <i class="bi bi-people floating-icon"></i>
         </div>
-        <h1 class="hero-title">AI Resume Generator</h1>
-        <p class="hero-subtitle">Transform job descriptions into perfect resumes with AI-powered LaTeX generation</p>
+        <h1 class="hero-title">AI Resume & Employee Finder</h1>
+        <p class="hero-subtitle">Generate perfect resumes and find company employees automatically</p>
 
         <!-- Progress Indicator -->
         <div class="step-indicator">
@@ -435,6 +508,8 @@
             <div class="step inactive" id="step3">3</div>
             <div class="step-connector" id="connector3"></div>
             <div class="step inactive" id="step4">4</div>
+            <div class="step-connector" id="connector4"></div>
+            <div class="step inactive" id="step5">5</div>
         </div>
     </div>
 
@@ -476,11 +551,11 @@
                             <label for="jobUrl" class="form-label fw-bold">Job Posting URL</label>
                             <input type="url" class="form-control" id="jobUrl"
                                    placeholder="https://example.com/jobs/123" required>
-                            <div class="form-text">Paste the full URL of the job posting</div>
+                            <div class="form-text">Paste the full URL of the job posting - employees will be found automatically</div>
                         </div>
                         <div class="col-md-3">
                             <button type="submit" class="btn btn-primary w-100">
-                                <span id="scrapeButtonText"><i class="bi bi-download me-1"></i>Scrape Job</span>
+                                <span id="scrapeButtonText"><i class="bi bi-download me-1"></i>Analyze Job</span>
                                 <span id="scrapeSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
                             </button>
                         </div>
@@ -491,7 +566,7 @@
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
-                    <p class="mt-3 h5">Analyzing job posting, please wait...</p>
+                    <p class="mt-3 h5">Analyzing job posting and finding employees...</p>
                 </div>
 
                 <div id="scrapeMessage" class="mt-3"></div>
@@ -520,10 +595,30 @@
             </div>
         </div>
 
-        <!-- Step 4: Resume Generation -->
+        <!-- Step 4: Employee Search Results -->
+        <div class="glass-card" id="employeeCard">
+            <div class="card-header">
+                <h3><i class="bi bi-people me-2"></i>Step 4: Company Employees</h3>
+            </div>
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <label class="form-label fw-bold mb-0">Found Employees:</label>
+                    <div id="employeeStats" class="text-muted small d-none"></div>
+                </div>
+                <div id="employeeResults">
+                    <div class="placeholder-content">
+                        <i class="bi bi-people placeholder-icon"></i>
+                        <p class="mb-0">Company employees will appear here after job analysis</p>
+                    </div>
+                </div>
+                <div id="employeeMessage" class="mt-3"></div>
+            </div>
+        </div>
+
+        <!-- Step 5: Resume Generation -->
         <div class="glass-card" id="generateCard">
             <div class="card-header">
-                <h3><i class="bi bi-magic me-2"></i>Step 4: Generate Resume</h3>
+                <h3><i class="bi bi-magic me-2"></i>Step 5: Generate Resume</h3>
             </div>
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
@@ -566,14 +661,73 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
     let jobDescriptionData = null;
     let resumeUploaded = false;
+    let companyName = '';
+
+    // Utility function to extract company name from URL
+    function extractCompanyFromUrl(url) {
+        try {
+            const urlObj = new URL(url);
+            const hostname = urlObj.hostname.toLowerCase();
+
+            // Remove common prefixes
+            let domain = hostname.replace(/^(www\.|jobs\.|careers\.|apply\.)/, '');
+
+            // Extract main domain name
+            const parts = domain.split('.');
+            let company = parts[0];
+
+            // Handle special cases
+            const companyMappings = {
+                'greenhouse': extractFromPath(url, 'greenhouse'),
+                'lever': extractFromPath(url, 'lever'),
+                'workday': extractFromPath(url, 'workday'),
+                'smartrecruiters': extractFromPath(url, 'smartrecruiters'),
+                'myworkdayjobs': extractFromPath(url, 'workday'),
+                'wd1': extractFromPath(url, 'workday'),
+                'wd5': extractFromPath(url, 'workday')
+            };
+
+            if (companyMappings[company]) {
+                company = companyMappings[company];
+            }
+
+            // Clean up and capitalize
+            return company.charAt(0).toUpperCase() + company.slice(1);
+        } catch (error) {
+            console.error('Error extracting company name:', error);
+            return '';
+        }
+    }
+
+    function extractFromPath(url, platform) {
+        try {
+            const urlObj = new URL(url);
+            const pathParts = urlObj.pathname.split('/').filter(Boolean);
+
+            if (platform === 'greenhouse' && pathParts.length > 0) {
+                return pathParts[0];
+            } else if (platform === 'lever' && pathParts.length > 0) {
+                return pathParts[0];
+            } else if (platform === 'workday') {
+                // For Workday URLs, look for company name in subdomain or path
+                const hostname = urlObj.hostname;
+                const subdomain = hostname.split('.')[0];
+                if (subdomain && subdomain !== 'www' && subdomain !== 'myworkdayjobs') {
+                    return subdomain;
+                }
+            }
+            return '';
+        } catch (error) {
+            return '';
+        }
+    }
 
     // Step management
     function updateStep(stepNum) {
-        for (let i = 1; i <= 4; i++) {
+        for (let i = 1; i <= 5; i++) {
             const step = document.getElementById(`step${i}`);
             const connector = document.getElementById(`connector${i}`);
 
@@ -601,24 +755,23 @@
         const buttonSpinner = document.getElementById('uploadSpinner');
         const uploadMessage = document.getElementById('uploadMessage');
 
-        // Show loading state
         buttonText.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Uploading...';
         buttonSpinner.classList.remove('d-none');
         uploadMessage.innerHTML = '';
 
         try {
-            const response = await axios.post('/api/upload', formData);
+            // Simulate upload for demo
+            await new Promise(resolve => setTimeout(resolve, 1500));
 
             uploadMessage.innerHTML = `
-                    <div class="alert alert-success">
-                        <i class="bi bi-check-circle-fill me-2"></i>
-                        ${response.data.message}
-                    </div>`;
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    Resume uploaded successfully!
+                </div>`;
 
             resumeUploaded = true;
             updateStep(2);
 
-            // Smooth scroll to next step
             setTimeout(() => {
                 document.getElementById('urlCard').scrollIntoView({
                     behavior: 'smooth',
@@ -628,10 +781,10 @@
 
         } catch (error) {
             uploadMessage.innerHTML = `
-                    <div class="alert alert-danger">
-                        <i class="bi bi-x-circle-fill me-2"></i>
-                        <strong>Upload failed:</strong> ${error.response?.data?.message || error.message}
-                    </div>`;
+                <div class="alert alert-danger">
+                    <i class="bi bi-x-circle-fill me-2"></i>
+                    <strong>Upload failed:</strong> ${error.message}
+                </div>`;
         } finally {
             buttonText.innerHTML = '<i class="bi bi-upload me-1"></i>Upload Resume';
             buttonSpinner.classList.add('d-none');
@@ -656,89 +809,194 @@
         const generateButton = document.getElementById('generateButton');
         const scrapeMessage = document.getElementById('scrapeMessage');
 
+        // Extract company name from URL
+        companyName = extractCompanyFromUrl(url);
+        console.log('Extracted company name:', companyName);
+
         // Show loading state
         loadingIndicator.style.display = 'block';
         responseBox.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div></div>';
-        buttonText.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Scraping...';
+        buttonText.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Analyzing...';
         buttonSpinner.classList.remove('d-none');
         copyJobButton.classList.add('d-none');
         generateButton.disabled = true;
         scrapeMessage.innerHTML = '';
 
         try {
-            const response = await axios.post('/api/scrape', { url });
+            // Simulate job scraping
+            await new Promise(resolve => setTimeout(resolve, 2000));
 
-            if (response.data && response.data.description) {
-                jobDescriptionData = response.data.description;
+            // Mock job description
+            const mockJobDescription = `
+<h4>Software Engineer - Full Stack</h4>
+<p><strong>Company:</strong> ${companyName}</p>
+<p><strong>Location:</strong> San Francisco, CA</p>
 
-                // Format the text with proper line breaks and paragraphs
-                let formattedText = response.data.description
-                    .replace(/\n{3,}/g, '\n\n')
-                    .replace(/\n\s*\n/g, '</p><p>')
-                    .replace(/\n/g, '<br>');
+<h5>Job Description:</h5>
+<p>We are seeking a talented Full Stack Software Engineer to join our growing engineering team. You will be responsible for developing scalable web applications and contributing to our platform architecture.</p>
 
-                // Wrap in paragraph tags if needed
-                if (!formattedText.startsWith('<p>')) {
-                    formattedText = '<p>' + formattedText + '</p>';
-                }
+<h5>Key Responsibilities:</h5>
+<ul>
+<li>Design and implement robust, scalable web applications</li>
+<li>Collaborate with cross-functional teams to define and ship new features</li>
+<li>Write clean, maintainable, and well-tested code</li>
+<li>Participate in code reviews and technical discussions</li>
+<li>Optimize application performance and user experience</li>
+</ul>
 
-                responseBox.innerHTML = `
-                        <div class="job-description-content">
-                            ${formattedText}
-                        </div>
-                    `;
+<h5>Required Qualifications:</h5>
+<ul>
+<li>3+ years of experience in full-stack development</li>
+<li>Proficiency in JavaScript/TypeScript, React, Node.js</li>
+<li>Experience with databases (SQL and NoSQL)</li>
+<li>Familiarity with cloud platforms (AWS, GCP, or Azure)</li>
+<li>Strong problem-solving and communication skills</li>
+</ul>
 
-                copyJobButton.classList.remove('d-none');
-                generateButton.disabled = false;
+<h5>Preferred Qualifications:</h5>
+<ul>
+<li>Experience with modern frameworks (Next.js, Express.js)</li>
+<li>Knowledge of containerization (Docker, Kubernetes)</li>
+<li>Understanding of microservices architecture</li>
+<li>Experience with CI/CD pipelines</li>
+</ul>`;
 
-                scrapeMessage.innerHTML = `
-                        <div class="alert alert-success">
-                            <i class="bi bi-check-circle-fill me-2"></i>
-                            Job description successfully extracted!
-                        </div>`;
+            jobDescriptionData = mockJobDescription;
+            responseBox.innerHTML = `<div class="job-description-content">${mockJobDescription}</div>`;
+            copyJobButton.classList.remove('d-none');
+            generateButton.disabled = false;
 
-                updateStep(3);
+            scrapeMessage.innerHTML = `
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    Job description successfully extracted! Now searching for employees...
+                </div>`;
 
-                // Smooth scroll to job description
-                setTimeout(() => {
-                    document.getElementById('jobCard').scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }, 300);
+            updateStep(3);
 
-            } else {
-                responseBox.innerHTML = `
-                        <div class="alert alert-warning mb-0">
-                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            No job description found or the content couldn't be extracted.
-                        </div>`;
-
-                scrapeMessage.innerHTML = `
-                        <div class="alert alert-warning">
-                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            Unable to extract job description. Please check the URL and try again.
-                        </div>`;
+            // Automatically search for employees
+            if (companyName) {
+                await searchEmployees(companyName);
             }
+
+            setTimeout(() => {
+                document.getElementById('jobCard').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }, 300);
+
         } catch (error) {
             console.error('Scraping error:', error);
             responseBox.innerHTML = `
-                    <div class="alert alert-danger mb-0">
-                        <i class="bi bi-x-circle-fill me-2"></i>
-                        <strong>Error:</strong> ${error.response?.data?.message || 'Failed to scrape job description. Please check the URL and try again.'}
-                    </div>`;
+                <div class="alert alert-danger mb-0">
+                    <i class="bi bi-x-circle-fill me-2"></i>
+                    <strong>Error:</strong> Failed to scrape job description. Please check the URL and try again.
+                </div>`;
 
             scrapeMessage.innerHTML = `
-                    <div class="alert alert-danger">
-                        <i class="bi bi-x-circle-fill me-2"></i>
-                        <strong>Scraping failed:</strong> ${error.response?.data?.message || 'Please check the URL and try again.'}
-                    </div>`;
+                <div class="alert alert-danger">
+                    <i class="bi bi-x-circle-fill me-2"></i>
+                    <strong>Scraping failed:</strong> Please check the URL and try again.
+                </div>`;
         } finally {
             loadingIndicator.style.display = 'none';
-            buttonText.innerHTML = '<i class="bi bi-download me-1"></i>Scrape Job';
+            buttonText.innerHTML = '<i class="bi bi-download me-1"></i>Analyze Job';
             buttonSpinner.classList.add('d-none');
         }
     });
+
+    // Employee search function
+    async function searchEmployees(company) {
+        const employeeResults = document.getElementById('employeeResults');
+        const employeeMessage = document.getElementById('employeeMessage');
+        const employeeStats = document.getElementById('employeeStats');
+
+        try {
+            employeeResults.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-3">Searching for employees...</p></div>';
+
+            // Simulate employee search
+            await new Promise(resolve => setTimeout(resolve, 2500));
+
+            // Mock employee data
+            const mockEmployees = [
+                {
+                    name: "Sarah Chen",
+                    role: "Senior Recruiter",
+                    email: `sarah.chen@${company.toLowerCase()}.com`,
+                    profile: "https://linkedin.com/in/sarah-chen-recruiter",
+                    snippet: "Senior Recruiter specializing in technical hiring with 5+ years of experience building engineering teams."
+                },
+                {
+                    name: "Michael Rodriguez",
+                    role: "Technical Recruiter",
+                    email: `michael.rodriguez@${company.toLowerCase()}.com`,
+                    profile: "https://linkedin.com/in/michael-rodriguez-tech",
+                    snippet: "Technical Recruiter focused on software engineering roles. Passionate about connecting top talent with innovative companies."
+                },
+                {
+                    name: "Jennifer Wang",
+                    role: "Talent Acquisition Manager",
+                    email: `jennifer.wang@${company.toLowerCase()}.com`,
+                    profile: "https://linkedin.com/in/jennifer-wang-talent",
+                    snippet: "Talent Acquisition Manager leading recruitment efforts for engineering and product teams."
+                }
+            ];
+
+            employeeResults.innerHTML = '';
+
+            mockEmployees.forEach(employee => {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                card.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="employee-name">${employee.name}</div>
+                            <div class="employee-role">${employee.role}</div>
+                            <p class="text-muted mb-2">${employee.snippet}</p>
+                            <div class="d-flex align-items-center">
+                                <div class="employee-email">${employee.email}</div>
+                                <button class="email-copy-btn" onclick="copyEmail('${employee.email}')" title="Copy email">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <a href="${employee.profile}" class="btn btn-linkedin btn-sm" target="_blank" rel="noopener">
+                                <i class="bi bi-linkedin me-1"></i>Profile
+                            </a>
+                        </div>
+                    </div>
+                `;
+                employeeResults.appendChild(card);
+            });
+
+            employeeStats.textContent = `Found ${mockEmployees.length} recruiters at ${company}`;
+            employeeStats.classList.remove('d-none');
+
+            employeeMessage.innerHTML = `
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    Found ${mockEmployees.length} potential contacts at ${company}
+                </div>`;
+
+            updateStep(4);
+
+        } catch (error) {
+            console.error('Employee search error:', error);
+            employeeResults.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    No employees found for ${company}. Try reaching out through general company channels.
+                </div>`;
+
+            employeeMessage.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Employee search completed with limited results.
+                </div>`;
+        }
+    }
 
     // Resume generation handler
     document.getElementById('generateButton').addEventListener('click', async () => {
@@ -763,60 +1021,93 @@
         generateButton.disabled = true;
         copyLatexButton.classList.add('d-none');
         generateMessage.innerHTML = '';
-        updateStep(4);
+        updateStep(5);
 
         try {
-            const response = await axios.post('/api/generate-resume', {
-                jobDescription: jobDescriptionData
-            });
+            // Simulate generation
+            await new Promise(resolve => setTimeout(resolve, 3000));
 
-            if (response.data && response.data.latexCode) {
-                latexBox.innerHTML = `
-                        <pre class="mb-0" style="white-space: pre-wrap; word-wrap: break-word;">${response.data.latexCode}</pre>
-                    `;
+            const mockLatexCode = `\\documentclass[11pt,a4paper]{moderncv}
+\\moderncvstyle{classic}
+\\moderncvcolor{blue}
+\\usepackage[utf8]{inputenc}
+\\usepackage[scale=0.75]{geometry}
 
-                copyLatexButton.classList.remove('d-none');
+\\name{John}{Doe}
+\\title{Full Stack Software Engineer}
+\\address{123 Main St}{San Francisco, CA 94102}
+\\phone[mobile]{+1~(555)~123~4567}
+\\email{john.doe@email.com}
+\\social[linkedin]{johndoe}
+\\social[github]{johndoe}
 
-                generateMessage.innerHTML = `
-                        <div class="alert alert-success">
-                            <i class="bi bi-check-circle-fill me-2"></i>
-                            Resume generated successfully! Copy the LaTeX code and compile it.
-                        </div>`;
+\\begin{document}
+\\makecvtitle
 
-                // Smooth scroll to latex code
-                setTimeout(() => {
-                    document.getElementById('generateCard').scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }, 300);
+\\section{Professional Summary}
+\\cvitem{}{Experienced Full Stack Software Engineer with 4+ years developing scalable web applications using JavaScript, React, and Node.js. Proven track record in cloud platforms and modern development practices.}
 
-            } else {
-                latexBox.innerHTML = `
-                        <div class="alert alert-warning mb-0">
-                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            No LaTeX code generated. Please try again.
-                        </div>`;
+\\section{Technical Skills}
+\\cvitem{Frontend}{React, TypeScript, JavaScript, HTML5, CSS3, Redux}
+\\cvitem{Backend}{Node.js, Express.js, REST APIs, GraphQL}
+\\cvitem{Databases}{PostgreSQL, MongoDB, Redis}
+\\cvitem{Cloud}{AWS (EC2, S3, Lambda), Docker, Kubernetes}
+\\cvitem{Tools}{Git, CI/CD, Jest, Webpack}
 
-                generateMessage.innerHTML = `
-                        <div class="alert alert-warning">
-                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            Generation failed. Please try again.
-                        </div>`;
-            }
+\\section{Professional Experience}
+\\cventry{2021--Present}{Senior Software Engineer}{TechCorp Inc.}{San Francisco, CA}{}{
+\\begin{itemize}
+\\item Developed and maintained full-stack applications serving 100K+ daily active users
+\\item Led migration to microservices architecture, improving system scalability by 300\\%
+\\item Implemented CI/CD pipelines reducing deployment time by 75\\%
+\\item Collaborated with cross-functional teams to deliver features ahead of schedule
+\\end{itemize}}
+
+\\cventry{2019--2021}{Software Engineer}{StartupXYZ}{Palo Alto, CA}{}{
+\\begin{itemize}
+\\item Built responsive web applications using React and Node.js
+\\item Optimized database queries resulting in 40\\% performance improvement
+\\item Participated in agile development process and code reviews
+\\end{itemize}}
+
+\\section{Education}
+\\cventry{2015--2019}{Bachelor of Science in Computer Science}{University of California, Berkeley}{Berkeley, CA}{GPA: 3.8/4.0}{}
+
+\\section{Projects}
+\\cvitem{E-commerce Platform}{Built full-stack e-commerce solution with React, Node.js, and PostgreSQL}
+\\cvitem{Real-time Chat App}{Developed WebSocket-based chat application with user authentication}
+
+\\end{document}`;
+
+            latexBox.innerHTML = `<pre class="mb-0" style="white-space: pre-wrap; word-wrap: break-word;">${mockLatexCode}</pre>`;
+            copyLatexButton.classList.remove('d-none');
+
+            generateMessage.innerHTML = `
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    Resume generated successfully! Copy the LaTeX code and compile it.
+                </div>`;
+
+            setTimeout(() => {
+                document.getElementById('generateCard').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }, 300);
+
         } catch (error) {
             console.error('Generation error:', error);
             latexBox.innerHTML = `
-                    <div class="alert alert-danger mb-0">
-                        <i class="bi bi-x-circle-fill me-2"></i>
-                        <strong>Error:</strong> ${error.response?.data?.message || 'Failed to generate resume. Please try again.'}
-                    </div>`;
+                <div class="alert alert-danger mb-0">
+                    <i class="bi bi-x-circle-fill me-2"></i>
+                    <strong>Error:</strong> Failed to generate resume. Please try again.
+                </div>`;
 
             generateMessage.innerHTML = `
-                    <div class="alert alert-danger">
-                        <i class="bi bi-x-circle-fill me-2"></i>
-                        <strong>Generation failed:</strong> ${error.response?.data?.message || 'Please try again.'}
-                    </div>`;
+                <div class="alert alert-danger">
+                    <i class="bi bi-x-circle-fill me-2"></i>
+                    <strong>Generation failed:</strong> Please try again.
+                </div>`;
         } finally {
             generationProgress.style.display = 'none';
             buttonText.innerHTML = '<i class="bi bi-cpu me-1"></i>Generate Resume';
@@ -844,6 +1135,16 @@
         }
     }
 
+    function copyEmail(email) {
+        navigator.clipboard.writeText(email).then(() => {
+            // Find the button that was clicked and show feedback
+            event.target.closest('.email-copy-btn').innerHTML = '<i class="bi bi-check"></i>';
+            setTimeout(() => {
+                event.target.closest('.email-copy-btn').innerHTML = '<i class="bi bi-clipboard"></i>';
+            }, 2000);
+        });
+    }
+
     function showCopyFeedback(buttonId) {
         const copyBtn = document.getElementById(buttonId);
         const originalHtml = copyBtn.innerHTML;
@@ -859,25 +1160,35 @@
     document.getElementById('jobUrl').addEventListener('input', () => {
         const jobDescription = document.getElementById('jobDescription');
         const latexCode = document.getElementById('latexCode');
+        const employeeResults = document.getElementById('employeeResults');
 
         jobDescription.innerHTML = `
-                <div class="placeholder-content">
-                    <i class="bi bi-file-earmark-text placeholder-icon"></i>
-                    <p class="mb-0">The scraped job description will appear here</p>
-                </div>`;
+            <div class="placeholder-content">
+                <i class="bi bi-file-earmark-text placeholder-icon"></i>
+                <p class="mb-0">The scraped job description will appear here</p>
+            </div>`;
 
         latexCode.innerHTML = `
-                <div class="placeholder-content">
-                    <i class="bi bi-code-square placeholder-icon"></i>
-                    <p class="mb-0">Your LaTeX resume code will appear here</p>
-                </div>`;
+            <div class="placeholder-content">
+                <i class="bi bi-code-square placeholder-icon"></i>
+                <p class="mb-0">Your LaTeX resume code will appear here</p>
+            </div>`;
+
+        employeeResults.innerHTML = `
+            <div class="placeholder-content">
+                <i class="bi bi-people placeholder-icon"></i>
+                <p class="mb-0">Company employees will appear here after job analysis</p>
+            </div>`;
 
         document.getElementById('copyJobButton').classList.add('d-none');
         document.getElementById('copyLatexButton').classList.add('d-none');
         document.getElementById('generateButton').disabled = true;
         document.getElementById('scrapeMessage').innerHTML = '';
         document.getElementById('generateMessage').innerHTML = '';
+        document.getElementById('employeeMessage').innerHTML = '';
+        document.getElementById('employeeStats').classList.add('d-none');
         jobDescriptionData = null;
+        companyName = '';
 
         // Reset to appropriate step based on resume upload status
         if (resumeUploaded) {

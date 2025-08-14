@@ -5,6 +5,7 @@ import com.joborchestratorai.akkajoborchestratorai.models.SearchRequest;
 import com.joborchestratorai.akkajoborchestratorai.models.SearchResult;
 import com.joborchestratorai.akkajoborchestratorai.services.ResumeSearchService;
 import com.joborchestratorai.akkajoborchestratorai.services.OpenAIService;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,11 +16,12 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 @RestController
 @RequestMapping("/api")
 @CrossOrigin
+@Profile("single-node")
 public class ResumeController {
 
     private final ResumeSearchService resumeSearchService;
@@ -96,7 +98,7 @@ public class ResumeController {
 
     // Legacy search for resume points (keeping for compatibility)
     @PostMapping("/search")
-    public CompletableFuture<ResponseEntity<List<SearchResult>>> search(@RequestBody SearchRequest request) {
+    public CompletionStage<ResponseEntity<List<SearchResult>>> search(@RequestBody SearchRequest request) {
         return resumeSearchService.searchResumes(request.getJobDescription(), request.getTopK())
                 .thenApply(ResponseEntity::ok)
                 .exceptionally(ex -> ResponseEntity.internalServerError().build());
